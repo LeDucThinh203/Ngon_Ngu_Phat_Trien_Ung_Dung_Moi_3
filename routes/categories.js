@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 let { RandomToken } = require('../utils/GenToken')
+// Clear cache to reload data
+delete require.cache[require.resolve('../utils/data')];
 let { data } = require('../utils/data')
 let { categories } = require('../utils/data')
 let slugify = require('slugify')
@@ -38,11 +40,17 @@ router.get('/slug/:slug', function (req, res, next) {
 ///api/v1/categories/:id/products
 router.get('/:id/products', function (req, res, next) {
   let categoryId = parseInt(req.params.id);
+  console.log('Searching for categoryId:', categoryId);
+  console.log('Total products:', data.length);
   let result = data.filter(
     function (e) {
-      return (!e.isDeleted) && e.category && e.category.id == categoryId
+      if (e.category) {
+        console.log('Product category id:', e.category.id, 'type:', typeof e.category.id);
+      }
+      return e.category && e.category.id === categoryId
     }
   );
+  console.log('Found products:', result.length);
   if (result.length > 0) {
     res.status(200).send(result)
   } else {
